@@ -61,6 +61,7 @@
     <section class="card url-card">
       <div class="card-heading">Current domain</div>
       <div id="domain" class="site-domain">Loading…</div>
+      <div id="category" class="site-category">Category: Unknown</div>
       <div id="fullUrl" class="full-url">Waiting for the current page</div>
       <button id="scanButton" class="scan-button" type="button">Scan current page</button>
     </section>
@@ -79,9 +80,23 @@
       <p id="summary" class="summary-text">CatPhish is ready to inspect your current page.</p>
     </section>
 
+    <section class="card trust-card">
+      <div class="card-heading">What CatPhish noticed</div>
+      <p id="trustExplanation" class="summary-text">Trust details appear after scanning.</p>
+      <p id="scoreReason" class="reputation-text">Score note: waiting for scan details.</p>
+      <p id="reputationStatus" class="reputation-text">Domain reputation: unknown</p>
+    </section>
+
     <section class="card findings-card">
       <div class="card-heading">Findings</div>
-      <ul id="findingsList" class="findings-list"></ul>
+      <div class="findings-section">
+        <div class="findings-label">Positive signals</div>
+        <ul id="positiveList" class="findings-list"></ul>
+      </div>
+      <div class="findings-section">
+        <div class="findings-label">Potential concerns</div>
+        <ul id="concernsList" class="findings-list"></ul>
+      </div>
     </section>
 
     <section class="card tip-card">

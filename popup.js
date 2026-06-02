@@ -63,26 +63,61 @@ function updateScanButtonState() {
 function renderPageHeader(url) {
   const result = analyzeUrl(url);
   $('domain').textContent = result.domain;
+  $('category').textContent = `Category: ${result.category || 'Unknown'}`;
   $('fullUrl').textContent = result.url || 'Waiting for the current page';
+  $('trustExplanation').textContent = 'Trust details update after scanning.';
+  $('scoreReason').textContent = 'Score note: waiting for scan details.';
+  $('reputationStatus').textContent = `Domain reputation: ${result.reputation?.status || 'unknown'}`;
 }
 
 function renderResult(url) {
   const result = analyzeUrl(url);
   $('domain').textContent = result.domain;
+  $('category').textContent = `Category: ${result.category || 'Unknown'}`;
   $('fullUrl').textContent = result.url;
   $('score').textContent = `${result.score}/100`;
   $('risk').textContent = result.level;
   $('risk').className = `risk-badge risk-${result.level.toLowerCase()}`;
   $('summary').textContent = result.summary;
+  $('trustExplanation').textContent = result.trustExplanation;
+  $('scoreReason').textContent = result.scoreReason || 'Score note: based on URL signals and site context.';
+  $('reputationStatus').textContent = `Domain reputation: ${result.reputation?.status || 'unknown'}`;
   $('tipText').textContent = result.tip;
 
-  const findingsList = $('findingsList');
-  findingsList.innerHTML = '';
-  result.reasons.forEach((reason) => {
+  renderFindings(result);
+}
+
+function renderFindings(result) {
+  const positiveList = $('positiveList');
+  const concernsList = $('concernsList');
+  if (!positiveList || !concernsList) return;
+
+  positiveList.innerHTML = '';
+  concernsList.innerHTML = '';
+
+  if (result.positiveSignals && result.positiveSignals.length) {
+    result.positiveSignals.forEach((signal) => {
+      const item = document.createElement('li');
+      item.textContent = signal;
+      positiveList.appendChild(item);
+    });
+  } else {
     const item = document.createElement('li');
-    item.textContent = reason;
-    findingsList.appendChild(item);
-  });
+    item.textContent = 'No strong positive signals were detected yet.';
+    positiveList.appendChild(item);
+  }
+
+  if (result.concerns && result.concerns.length) {
+    result.concerns.forEach((concern) => {
+      const item = document.createElement('li');
+      item.textContent = concern;
+      concernsList.appendChild(item);
+    });
+  } else {
+    const item = document.createElement('li');
+    item.textContent = 'CatPhish didn’t spot any common phishing indicators on this page.';
+    concernsList.appendChild(item);
+  }
 }
 
 function toggleSettingsMenu() {
