@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CatPhish</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="title-group">
+        <div class="title-name">CatPhish ✨</div>
+        <div class="title-subtitle">A curious cat catches phish.</div>
+      </div>
+      <button id="settingsButton" class="settings-button" aria-label="Open settings">
+        <span class="gear" aria-hidden="true">⚙</span>
+      </button>
+    </header>
+
+    <div id="settingsMenu" class="settings-menu hidden" aria-label="Theme settings">
+      <div class="settings-heading">Select a pastel vibe</div>
+      <div class="swatch-grid">
+        <button class="swatch" type="button" data-color="#ffd1e8" style="background:#ffd1e8" title="Pink"></button>
+        <button class="swatch" type="button" data-color="#d1fff0" style="background:#d1fff0" title="Mint"></button>
+        <button class="swatch" type="button" data-color="#e8d1ff" style="background:#e8d1ff" title="Lavender"></button>
+        <button class="swatch" type="button" data-color="#d1eaff" style="background:#d1eaff" title="Sky"></button>
+        <button class="swatch" type="button" data-color="#ffeed1" style="background:#ffeed1" title="Peach"></button>
+        <button class="swatch" type="button" data-color="#fff4d1" style="background:#fff4d1" title="Lemon"></button>
+      </div>
+      <p class="settings-detail">Saved automatically.</p>
+    </div>
+
+    <section class="card url-card">
+      <div class="card-label">Current domain</div>
+      <div id="domain" class="site-domain">Loading…</div>
+      <div id="fullUrl" class="full-url">Waiting for the current page</div>
+      <button id="scanButton" class="scan-button" type="button">Scan current page</button>
+    </section>
+
+    <section class="card risk-card">
+      <div class="card-heading">Risk summary</div>
+      <div class="risk-status">
+        <span id="risk" class="risk-badge risk-low">Low</span>
+        <span id="score" class="score-value">0/100</span>
+      </div>
+      <p id="summary" class="summary-text">CatPhish is ready to inspect your current page.</p>
+    </section>
+
+    <section class="card findings-card">
+      <div class="card-heading">Findings</div>
+      <ul id="findingsList" class="findings-list"></ul>
+    </section>
+
+    <section class="card tip-card">
+      <div class="card-heading">Safety tip</div>
+      <p id="tipText" class="tip-text">Use CatPhish to help decide whether a page looks safe.</p>
+    </section>
+
+    <footer class="footer">Educational phishing indicator — not a guarantee.</footer>
+  </div>
+
+  <script src="storage.js"></script>
+  <script src="analyzer.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
