@@ -13,7 +13,7 @@
       <div class="brand">
         <img src="assets/icons/icon128.png" alt="CatPhish icon" class="app-icon" />
         <div class="title-group">
-          <div class="title-name">CatPhish ✨</div>
+          <div class="title-name">CatPhish</div>
           <div class="title-subtitle">A curious cat catches phish.</div>
         </div>
       </div>
@@ -62,12 +62,17 @@
       <div class="card-heading">Current domain</div>
       <div id="domain" class="site-domain">Loading…</div>
       <div id="category" class="site-category">Category: Unknown</div>
-      <div id="fullUrl" class="full-url">Waiting for the current page</div>
+      <div class="url-row">
+        <div id="fullUrl" class="full-url">Waiting for the current page</div>
+      </div>
+      <div class="url-toggle-row">
+        <button id="toggleUrlButton" class="link-button" type="button">Show full URL</button>
+      </div>
       <button id="scanButton" class="scan-button" type="button">Scan current page</button>
     </section>
 
     <section class="card risk-card">
-      <div class="card-heading">Risk meter</div>
+      <div class="card-heading">Analysis summary</div>
       <div class="risk-row">
         <span id="risk" class="risk-badge risk-low">Low</span>
         <span id="score" class="score-value">0 / 100</span>
@@ -78,6 +83,10 @@
         </div>
       </div>
       <p id="summary" class="summary-text">CatPhish is ready to inspect your current page.</p>
+      <div class="why-section">
+        <div class="card-label">Why this score?</div>
+        <ul id="topFactors" class="findings-list small-factors"></ul>
+      </div>
     </section>
 
     <section class="card trust-card">

@@ -128,21 +128,19 @@ function analyzeUrl(rawUrl) {
   const scoreNotes = [];
 
   if (url.protocol === 'https:') {
-    positiveSignals.push('Secure HTTPS connection detected');
+    positiveSignals.push('HTTPS enabled');
   } else {
     score += 25;
-    concerns.push('Connection is not HTTPS.');
-    scoreNotes.push('HTTPS is missing');
+    concerns.push('HTTPS missing');
+    scoreNotes.push('HTTPS missing');
   }
 
-  if (category !== 'Unknown') {
-    positiveSignals.push(`Recognized ${category} website`);
-  } else {
-    concerns.push('Website category could not be identified.');
+  if (category === 'Unknown') {
+    concerns.push('Category unknown');
   }
 
   if (safeDomain) {
-    positiveSignals.push('Domain appears legitimate');
+    positiveSignals.push('Known domain');
   }
 
   const foundKeywords = SUSPICIOUS_WORDS.filter((word) => pathAndQuery.includes(word));
@@ -151,7 +149,7 @@ function analyzeUrl(rawUrl) {
   if (foundKeywords.length) {
     foundKeywords.forEach((word) => {
       const isLoginSignal = LOGIN_KEYWORDS.includes(word);
-      const signalText = `URL contains the keyword: ${word}`;
+      const signalText = `Suspicious keyword: ${word}`;
 
       if (safeDomain && isLogin && isLoginSignal) {
         positiveSignals.push('Recognized a login page on a trusted domain');
@@ -160,7 +158,7 @@ function analyzeUrl(rawUrl) {
 
       if (isLogin && isLoginSignal) {
         score += safeDomain ? 3 : 8;
-        concerns.push('Login-related page detected. Verify the domain before entering credentials.');
+        concerns.push('Login-related page detected');
         scoreNotes.push('Login page detected');
         return;
       }
@@ -170,11 +168,11 @@ function analyzeUrl(rawUrl) {
       scoreNotes.push(signalText);
     });
   } else {
-    positiveSignals.push('No suspicious URL patterns found');
+    positiveSignals.push('No suspicious patterns');
   }
 
   if (isLogin && safeDomain) {
-    positiveSignals.push('Login pages are common and not inherently suspicious');
+    positiveSignals.push('Login page (common)');
   }
 
   if (isIpAddress(hostname)) {
@@ -206,14 +204,14 @@ function analyzeUrl(rawUrl) {
 
   if (rawUrl.length > 100) {
     score += 10;
-    concerns.push('URL is longer than 100 characters.');
+    concerns.push('Long URL');
     scoreNotes.push('Long URL detected');
   } else {
-    positiveSignals.push('URL length appears normal');
+    positiveSignals.push('Normal URL length');
   }
 
   if (!isIpAddress(hostname) && foundKeywords.length === 0 && category !== 'Unknown') {
-    positiveSignals.push('No impersonation indicators detected');
+    positiveSignals.push('No impersonation detected');
   }
 
   score = Math.min(100, score);
@@ -272,8 +270,11 @@ function analyzeUrl(rawUrl) {
   }
 
   const scoreReason = scoreNotes.length
-    ? `Score note: ${scoreNotes.join('; ')}.`
-    : 'Score note: normal URL structure and site signals.';
+    ? `${scoreNotes.join('; ')}`
+    : 'No major indicators.';
+
+  // top factors affecting the score (2-4 items)
+  const topFactors = scoreNotes.length ? scoreNotes.slice(0, 4) : concerns.slice(0, 4);
 
   return {
     url: rawUrl,
@@ -287,6 +288,7 @@ function analyzeUrl(rawUrl) {
     level,
     positiveSignals,
     concerns,
+    topFactors,
     summary,
     tip,
     trustExplanation,
