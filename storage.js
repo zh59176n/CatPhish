@@ -1,7 +1,10 @@
 // storage.js — theme settings persistence using chrome.storage.local.
 
 const STORAGE_DEFAULTS = {
-  themeColor: '#ffd1e8'
+  themeColor: '#ffd1e8',
+  autoScan: true,
+  analysisEnabled: true,
+  nightMode: false
 };
 
 function loadSettings(callback) {

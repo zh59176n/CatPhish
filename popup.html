@@ -5,14 +5,17 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>CatPhish</title>
   <link rel="stylesheet" href="styles.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
   <div class="container">
     <header class="header">
-      <div class="title-group">
-        <div class="title-name">CatPhish ✨</div>
-        <div class="title-subtitle">A curious cat catches phish.</div>
+      <div class="brand">
+        <img src="assets/icons/icon128.png" alt="CatPhish icon" class="app-icon" />
+        <div class="title-group">
+          <div class="title-name">CatPhish ✨</div>
+          <div class="title-subtitle">A curious cat catches phish.</div>
+        </div>
       </div>
       <button id="settingsButton" class="settings-button" aria-label="Open settings">
         <span class="gear" aria-hidden="true">⚙</span>
@@ -20,7 +23,7 @@
     </header>
 
     <div id="settingsMenu" class="settings-menu hidden" aria-label="Theme settings">
-      <div class="settings-heading">Select a pastel vibe</div>
+      <div class="settings-heading">Pick a theme color</div>
       <div class="swatch-grid">
         <button class="swatch" type="button" data-color="#ffd1e8" style="background:#ffd1e8" title="Pink"></button>
         <button class="swatch" type="button" data-color="#d1fff0" style="background:#d1fff0" title="Mint"></button>
@@ -30,20 +33,48 @@
         <button class="swatch" type="button" data-color="#fff4d1" style="background:#fff4d1" title="Lemon"></button>
       </div>
       <p class="settings-detail">Saved automatically.</p>
+      <div class="settings-divider"></div>
+      <div class="settings-subheading">Scan behavior</div>
+      <div class="settings-group">
+        <div class="settings-label">Auto-scan current page</div>
+        <label class="toggle">
+          <input id="autoScanToggle" class="toggle-input" type="checkbox" />
+          <span class="toggle-switch"></span>
+        </label>
+      </div>
+      <div class="settings-group">
+        <div class="settings-label">Enable scanning</div>
+        <label class="toggle">
+          <input id="analysisToggle" class="toggle-input" type="checkbox" />
+          <span class="toggle-switch"></span>
+        </label>
+      </div>
+      <div class="settings-group">
+        <div class="settings-label">Night mode</div>
+        <label class="toggle">
+          <input id="nightModeToggle" class="toggle-input" type="checkbox" />
+          <span class="toggle-switch"></span>
+        </label>
+      </div>
     </div>
 
     <section class="card url-card">
-      <div class="card-label">Current domain</div>
+      <div class="card-heading">Current domain</div>
       <div id="domain" class="site-domain">Loading…</div>
       <div id="fullUrl" class="full-url">Waiting for the current page</div>
       <button id="scanButton" class="scan-button" type="button">Scan current page</button>
     </section>
 
     <section class="card risk-card">
-      <div class="card-heading">Risk summary</div>
-      <div class="risk-status">
+      <div class="card-heading">Risk meter</div>
+      <div class="risk-row">
         <span id="risk" class="risk-badge risk-low">Low</span>
-        <span id="score" class="score-value">0/100</span>
+        <span id="score" class="score-value">0 / 100</span>
+      </div>
+      <div class="risk-meter" aria-hidden="true">
+        <div class="meter-track">
+          <div id="riskMeterFill" class="meter-fill"></div>
+        </div>
       </div>
       <p id="summary" class="summary-text">CatPhish is ready to inspect your current page.</p>
     </section>

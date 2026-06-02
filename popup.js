@@ -20,11 +20,50 @@ function loadCurrentPage(callback) {
 function applySettings(settings) {
   currentSettings = settings;
   document.documentElement.style.setProperty('--card', settings.themeColor);
+  document.body.classList.toggle('dark-mode', Boolean(settings.nightMode));
 
   const swatches = document.querySelectorAll('.swatch');
   swatches.forEach((swatch) => {
+    swatch.style.backgroundColor = swatch.dataset.color;
     swatch.classList.toggle('selected', swatch.dataset.color === settings.themeColor);
   });
+
+  const autoScanInput = $('autoScanToggle');
+  const analysisInput = $('analysisToggle');
+  const nightModeInput = $('nightModeToggle');
+
+  if (autoScanInput) {
+    autoScanInput.checked = Boolean(settings.autoScan);
+  }
+  if (analysisInput) {
+    analysisInput.checked = Boolean(settings.analysisEnabled);
+  }
+  if (nightModeInput) {
+    nightModeInput.checked = Boolean(settings.nightMode);
+  }
+
+  updateScanButtonState();
+}
+
+function updateScanButtonState() {
+  const scanButton = $('scanButton');
+  if (!scanButton) return;
+
+  if (!currentSettings.analysisEnabled) {
+    scanButton.disabled = true;
+    scanButton.textContent = 'Scanning paused';
+    scanButton.classList.add('disabled');
+  } else {
+    scanButton.disabled = false;
+    scanButton.textContent = 'Scan current page';
+    scanButton.classList.remove('disabled');
+  }
+}
+
+function renderPageHeader(url) {
+  const result = analyzeUrl(url);
+  $('domain').textContent = result.domain;
+  $('fullUrl').textContent = result.url || 'Waiting for the current page';
 }
 
 function renderResult(url) {
@@ -80,8 +119,44 @@ function initializeControls() {
     });
   });
 
+  const autoScanToggle = $('autoScanToggle');
+  const analysisToggle = $('analysisToggle');
+
+  if (autoScanToggle) {
+    autoScanToggle.addEventListener('change', () => {
+      currentSettings.autoScan = autoScanToggle.checked;
+      saveSettings(currentSettings);
+
+      if (currentSettings.autoScan && currentSettings.analysisEnabled) {
+        loadCurrentPage(renderResult);
+      }
+    });
+  }
+
+  if (analysisToggle) {
+    analysisToggle.addEventListener('change', () => {
+      currentSettings.analysisEnabled = analysisToggle.checked;
+      saveSettings(currentSettings);
+      applySettings(currentSettings);
+
+      if (currentSettings.analysisEnabled && currentSettings.autoScan) {
+        loadCurrentPage(renderResult);
+      }
+    });
+  }
+
+  const nightModeToggle = $('nightModeToggle');
+  if (nightModeToggle) {
+    nightModeToggle.addEventListener('change', () => {
+      currentSettings.nightMode = nightModeToggle.checked;
+      saveSettings(currentSettings);
+      applySettings(currentSettings);
+    });
+  }
+
   if (scanButton) {
     scanButton.addEventListener('click', () => {
+      if (!currentSettings.analysisEnabled) return;
       loadCurrentPage(renderResult);
     });
   }
@@ -99,7 +174,18 @@ function initPopup() {
   loadSettings((settings) => {
     applySettings(settings);
     initializeControls();
-    loadCurrentPage(renderResult);
+    loadCurrentPage((url) => {
+      renderPageHeader(url);
+      if (currentSettings.autoScan && currentSettings.analysisEnabled) {
+        renderResult(url);
+      } else {
+        if (currentSettings.analysisEnabled) {
+          $('summary').textContent = 'Auto-scan is off. Tap scan to analyze this page.';
+        } else {
+          $('summary').textContent = 'Scanning is paused in settings.';
+        }
+      }
+    });
   });
 }
 

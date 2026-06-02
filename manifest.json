@@ -4,7 +4,18 @@
   "version": "0.1",
   "description": "Kawaii phishing indicator and URL safety extension",
   "action": {
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "assets/icons/icon16.png",
+      "48": "assets/icons/icon48.png",
+      "128": "assets/icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "assets/icons/icon16.png",
+    "48": "assets/icons/icon48.png",
+    "128": "assets/icons/icon128.png",
+    "512": "assets/icons/icon512.png"
   },
   "permissions": ["activeTab"],
   "content_security_policy": {
