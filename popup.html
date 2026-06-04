@@ -11,7 +11,7 @@
   <div class="container">
     <header class="header">
       <div class="brand">
-        <img src="assets/icons/icon128.png" alt="CatPhish icon" class="app-icon" />
+        <div id="catSprite" class="cat-sprite" role="img" aria-label="CatPhish cat"></div>
         <div class="title-group">
           <div class="title-name">CatPhish</div>
           <div class="title-subtitle">A curious cat catches phish.</div>
@@ -22,15 +22,15 @@
       </button>
     </header>
 
-    <div id="settingsMenu" class="settings-menu hidden" aria-label="Theme settings">
+    <div id="settingsMenu" class="settings-menu hidden" aria-label="Settings">
       <div class="settings-heading">Pick a theme color</div>
       <div class="swatch-grid">
-        <button class="swatch" type="button" data-color="#ffd1e8" style="background:#ffd1e8" title="Pink"></button>
-        <button class="swatch" type="button" data-color="#d1fff0" style="background:#d1fff0" title="Mint"></button>
-        <button class="swatch" type="button" data-color="#e8d1ff" style="background:#e8d1ff" title="Lavender"></button>
-        <button class="swatch" type="button" data-color="#d1eaff" style="background:#d1eaff" title="Sky"></button>
-        <button class="swatch" type="button" data-color="#ffeed1" style="background:#ffeed1" title="Peach"></button>
-        <button class="swatch" type="button" data-color="#fff4d1" style="background:#fff4d1" title="Lemon"></button>
+        <button class="swatch swatch-pink"     type="button" data-color="#ffd1e8" aria-label="Pink theme"     aria-pressed="false"></button>
+        <button class="swatch swatch-mint"     type="button" data-color="#d1fff0" aria-label="Mint theme"     aria-pressed="false"></button>
+        <button class="swatch swatch-lavender" type="button" data-color="#e8d1ff" aria-label="Lavender theme" aria-pressed="false"></button>
+        <button class="swatch swatch-sky"      type="button" data-color="#d1eaff" aria-label="Sky theme"      aria-pressed="false"></button>
+        <button class="swatch swatch-peach"    type="button" data-color="#ffeed1" aria-label="Peach theme"    aria-pressed="false"></button>
+        <button class="swatch swatch-lemon"    type="button" data-color="#fff4d1" aria-label="Lemon theme"    aria-pressed="false"></button>
       </div>
       <p class="settings-detail">Saved automatically.</p>
       <div class="settings-divider"></div>
@@ -83,7 +83,7 @@
         </div>
       </div>
       <p id="summary" class="summary-text">CatPhish is ready to inspect your current page.</p>
-      <div class="why-section">
+      <div id="whySection" class="why-section" hidden>
         <div class="card-label">Why this score?</div>
         <ul id="topFactors" class="findings-list small-factors"></ul>
       </div>
@@ -113,7 +113,12 @@
       <p id="tipText" class="tip-text">Use CatPhish to help decide whether a page looks safe.</p>
     </section>
 
-    <footer class="footer">Educational phishing indicator — not a guarantee.</footer>
+    <section class="card history-card">
+      <div class="card-heading">Recent scans</div>
+      <ul id="historyList" class="history-list" aria-label="Recent scan history"></ul>
+    </section>
+
+    <footer class="footer">Educational phishing indicator — not a guarantee.<br>Threat data powered by <a href="https://safebrowsing.google.com" target="_blank" rel="noopener noreferrer" class="footer-link">Google Safe Browsing</a>. <a id="reportLink" href="https://safebrowsing.google.com/safebrowsing/report_phish/" target="_blank" rel="noopener noreferrer" class="footer-link">Report a site.</a></footer>
   </div>
 
   <script src="storage.js"></script>

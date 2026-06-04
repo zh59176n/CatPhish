@@ -17,7 +17,11 @@
     "128": "assets/icons/icon128.png",
     "512": "assets/icons/icon512.png"
   },
-  "permissions": ["activeTab"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": ["activeTab", "storage"],
+  "host_permissions": ["https://safebrowsing.googleapis.com/"],
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com;"
   }

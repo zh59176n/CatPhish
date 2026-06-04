@@ -6,44 +6,37 @@ function $(id) {
 
 let currentSettings = { themeColor: '#ffd1e8' };
 
-const THEME_PALETTES = {
-  '#ffd1e8': { text: '#342651', muted: '#7a4060', accent: '#e76f9e', bgStart: '#ffeaf2', bgMid: '#fff5fb' }, // pink
-  '#d1fff0': { text: '#1a3d32', muted: '#3d6655', accent: '#0f9060', bgStart: '#eafff8', bgMid: '#f5fffb' }, // mint
-  '#e8d1ff': { text: '#2d1f4a', muted: '#6a5090', accent: '#8b5cf6', bgStart: '#f0e8ff', bgMid: '#f8f5ff' }, // lavender
-  '#d1eaff': { text: '#1a2e4a', muted: '#3d5870', accent: '#2878c8', bgStart: '#eaf4ff', bgMid: '#f5f9ff' }, // sky
-  '#ffeed1': { text: '#3d2510', muted: '#8a5e3a', accent: '#cc6020', bgStart: '#fff5e8', bgMid: '#fffaf5' }, // peach
-  '#fff4d1': { text: '#352e10', muted: '#686025', accent: '#9e7800', bgStart: '#fffaea', bgMid: '#fffdf5' }, // lemon
+const THEME_CLASSES = {
+  '#ffd1e8': 'theme-pink',
+  '#d1fff0': 'theme-mint',
+  '#e8d1ff': 'theme-lavender',
+  '#d1eaff': 'theme-sky',
+  '#ffeed1': 'theme-peach',
+  '#fff4d1': 'theme-lemon',
 };
+
 let currentPageUrl = '';
+let currentTabId = null;
 let showFullUrl = false;
 
-function hexToRgb(hex) {
-  if (!hex) return [0, 0, 0];
-  let h = hex.replace('#', '').trim();
-  if (h.length === 3) h = h.split('').map((c) => c + c).join('');
-  const bigint = parseInt(h, 16);
-  return [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255];
-}
-
-function rgbToHex(r, g, b) {
-  const toHex = (n) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, '0');
-  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-}
-
-function darkenHex(hex, amount = 0.4) {
-  const [r, g, b] = hexToRgb(hex);
-  const factor = 1 - amount;
-  return rgbToHex(r * factor, g * factor, b * factor);
-}
-
 function loadCurrentPage(callback) {
-  if (chrome && chrome.tabs) {
+  if (chrome && chrome.tabs && chrome.tabs.query) {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (chrome.runtime.lastError) {
+        callback('');
+        return;
+      }
       const tab = tabs && tabs[0];
-      callback(tab && tab.url ? tab.url : '');
+      const url = (tab && tab.url) || '';
+      currentTabId = (tab && tab.id != null) ? tab.id : null;
+      // Browser-internal pages cannot be scanned
+      const internal = url.startsWith('chrome://') || url.startsWith('chrome-extension://') ||
+                       url.startsWith('about:') || url.startsWith('edge://') ||
+                       url.startsWith('moz-extension://');
+      callback(internal ? '' : url);
     });
   } else {
-    callback(window.location.href || '');
+    callback('');
   }
 }
 
@@ -56,10 +49,9 @@ function formatUrlDisplay(url) {
     return url;
   }
 
-  const maxLength = 72;
   const head = url.slice(0, 38);
   const tail = url.slice(-28);
-  return `${head}…${tail}`;
+  return `${head}...${tail}`;
 }
 
 function updateUrlDisplay(url) {
@@ -84,45 +76,28 @@ function updateUrlDisplay(url) {
 
 function applySettings(settings) {
   currentSettings = settings;
-  // Apply theme color; when night mode is active, use a darker variant so color changes still show
-  const appliedColor = settings.nightMode ? darkenHex(settings.themeColor, 0.5) : settings.themeColor;
-  document.documentElement.style.setProperty('--card', appliedColor);
 
+  // Swap theme body class (CSS handles all palette values — no inline styles needed)
+  Object.values(THEME_CLASSES).forEach((cls) => document.body.classList.remove(cls));
   if (!settings.nightMode) {
-    const palette = THEME_PALETTES[settings.themeColor] || THEME_PALETTES['#ffd1e8'];
-    document.documentElement.style.setProperty('--text', palette.text);
-    document.documentElement.style.setProperty('--muted', palette.muted);
-    document.documentElement.style.setProperty('--accent', palette.accent);
-    document.body.style.background = `radial-gradient(circle at top, ${palette.bgStart} 0%, ${palette.bgMid} 40%, #fffaff 100%)`;
-  } else {
-    // Remove inline overrides so dark mode CSS and :root defaults take over
-    document.documentElement.style.removeProperty('--text');
-    document.documentElement.style.removeProperty('--muted');
-    document.documentElement.style.removeProperty('--accent');
-    document.body.style.background = '';
+    document.body.classList.add(THEME_CLASSES[settings.themeColor] || 'theme-pink');
   }
 
   document.body.classList.toggle('dark-mode', Boolean(settings.nightMode));
 
-  const swatches = document.querySelectorAll('.swatch');
-  swatches.forEach((swatch) => {
-    swatch.style.backgroundColor = swatch.dataset.color;
-    swatch.classList.toggle('selected', swatch.dataset.color === settings.themeColor);
+  document.querySelectorAll('.swatch').forEach((swatch) => {
+    const active = swatch.dataset.color === settings.themeColor;
+    swatch.classList.toggle('selected', active);
+    swatch.setAttribute('aria-pressed', String(active));
   });
 
   const autoScanInput = $('autoScanToggle');
   const analysisInput = $('analysisToggle');
   const nightModeInput = $('nightModeToggle');
 
-  if (autoScanInput) {
-    autoScanInput.checked = Boolean(settings.autoScan);
-  }
-  if (analysisInput) {
-    analysisInput.checked = Boolean(settings.analysisEnabled);
-  }
-  if (nightModeInput) {
-    nightModeInput.checked = Boolean(settings.nightMode);
-  }
+  if (autoScanInput) autoScanInput.checked = Boolean(settings.autoScan);
+  if (analysisInput) analysisInput.checked = Boolean(settings.analysisEnabled);
+  if (nightModeInput) nightModeInput.checked = Boolean(settings.nightMode);
 
   updateScanButtonState();
 }
@@ -142,65 +117,164 @@ function updateScanButtonState() {
   }
 }
 
+function renderScanHistory(history) {
+  const list = $('historyList');
+  if (!list) return;
+  list.innerHTML = '';
+  if (!history.length) {
+    const empty = document.createElement('li');
+    empty.className = 'history-empty';
+    empty.textContent = 'No recent scans yet.';
+    list.appendChild(empty);
+    return;
+  }
+  history.forEach((item) => {
+    const li = document.createElement('li');
+    li.className = 'history-item';
+
+    const domainSpan = document.createElement('span');
+    domainSpan.className = 'history-domain';
+    domainSpan.textContent = item.domain;
+
+    const meta = document.createElement('span');
+    meta.className = 'history-meta';
+
+    const levelSpan = document.createElement('span');
+    levelSpan.className = `history-level history-${item.level.toLowerCase()}`;
+    levelSpan.textContent = item.level;
+    meta.appendChild(levelSpan);
+
+    if (item.score != null) {
+      const scoreSpan = document.createElement('span');
+      scoreSpan.className = 'history-score';
+      scoreSpan.textContent = `${item.score}`;
+      meta.appendChild(scoreSpan);
+    }
+
+    li.appendChild(domainSpan);
+    li.appendChild(meta);
+    list.appendChild(li);
+  });
+}
+
+function updateReportLink(url) {
+  const reportLink = $('reportLink');
+  if (!reportLink) return;
+  reportLink.href = url
+    ? `https://safebrowsing.google.com/safebrowsing/report_phish/?url=${encodeURIComponent(url)}`
+    : 'https://safebrowsing.google.com/safebrowsing/report_phish/';
+}
+
 function renderPageHeader(url) {
   const result = analyzeUrl(url);
   currentPageUrl = result.url || '';
-  $('domain').textContent = result.domain;
-  $('category').textContent = `Category: ${result.category || 'Unknown'}`;
+  $('domain').textContent = result.domain === 'unknown' ? '-' : result.domain;
+  $('category').textContent = url ? `Category: ${result.category || 'Unknown'}` : '';
   showFullUrl = false;
   updateUrlDisplay(result.url);
-  $('trustExplanation').textContent = 'Trust details update after scanning.';
-  $('scoreReason').textContent = 'Score note: waiting for scan details.';
-  $('reputationStatus').textContent = `Domain reputation: ${result.reputation?.status || 'unknown'}`;
+  updateReportLink(result.url);
+  $('trustExplanation').textContent = 'Trust details appear after scanning.';
+  $('scoreReason').textContent = '';
+  $('reputationStatus').textContent = '';
+  const topFactorsEl = $('topFactors');
+  if (topFactorsEl) topFactorsEl.innerHTML = '';
+  const whySection = $('whySection');
+  if (whySection) whySection.hidden = true;
+}
+
+function applyLiveThreatResult(sbResult) {
+  if (!sbResult || !sbResult.checked) return;
+
+  if (sbResult.isThreat) {
+    const label = sbResult.threatTypes.length
+      ? sbResult.threatTypes[0].replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase())
+      : 'Threat';
+    $('reputationStatus').textContent = `Safe Browsing: THREAT DETECTED — ${label}`;
+    $('risk').textContent = 'High';
+    $('risk').className = 'risk-badge risk-high';
+    $('score').textContent = '100 / 100';
+    const meterFill = $('riskMeterFill');
+    if (meterFill) meterFill.setAttribute('data-pct', '100');
+    const concernsList = $('concernsList');
+    if (concernsList) {
+      const item = document.createElement('li');
+      item.className = 'negative';
+      item.textContent = `Google Safe Browsing: ${label}`;
+      concernsList.prepend(item);
+    }
+  } else {
+    $('reputationStatus').textContent = 'Safe Browsing: No known threats found';
+    const positiveList = $('positiveList');
+    if (positiveList) {
+      const item = document.createElement('li');
+      item.textContent = 'Google Safe Browsing: Clean';
+      positiveList.prepend(item);
+    }
+  }
 }
 
 function renderResult(url) {
   const result = analyzeUrl(url);
   currentPageUrl = result.url || '';
-  $('domain').textContent = result.domain;
+  $('domain').textContent = result.domain === 'unknown' ? '-' : result.domain;
   $('category').textContent = `Category: ${result.category || 'Unknown'}`;
   updateUrlDisplay(result.url);
-  $('score').textContent = `${result.score}/100`;
+  updateReportLink(result.url);
+  $('score').textContent = `${result.score} / 100`;
   $('risk').textContent = result.level;
   $('risk').className = `risk-badge risk-${result.level.toLowerCase()}`;
-  $('summary').textContent = result.summary;
-  // Keep summary short (1-2 sentences) — trim to first sentence for clarity
-  const firstSentence = (result.summary || '').split('.').filter(Boolean)[0] || '';
-  if (firstSentence) $('summary').textContent = `${firstSentence.trim()}.`;
+  const firstSentence = (result.summary || '').split('.').filter(Boolean)[0] || result.summary;
+  $('summary').textContent = firstSentence ? `${firstSentence.trim()}.` : '';
   $('trustExplanation').textContent = result.trustExplanation;
   $('scoreReason').textContent = result.scoreReason || 'Most important indicators are shown above.';
   $('reputationStatus').textContent = `Domain reputation: ${result.reputation?.status || 'unknown'}`;
   $('tipText').textContent = result.tip;
   const meterFill = $('riskMeterFill');
   if (meterFill) {
-    meterFill.style.width = `${Math.min(100, Math.max(0, result.score))}%`;
+    const pct = Math.round(Math.min(100, Math.max(0, result.score)) / 5) * 5;
+    meterFill.setAttribute('data-pct', String(pct));
   }
 
   // Render top factors (why this score)
   const topFactorsEl = $('topFactors');
+  const whySection = $('whySection');
   if (topFactorsEl) {
     topFactorsEl.innerHTML = '';
     const factors = result.topFactors || [];
-    if (factors.length) {
-      factors.forEach((f) => {
-        const item = document.createElement('li');
-        item.textContent = f;
-        topFactorsEl.appendChild(item);
-      });
-    } else {
+    const items = factors.length ? factors : ['No major indicators'];
+    items.forEach((f) => {
       const item = document.createElement('li');
-      item.textContent = 'No major indicators';
+      item.textContent = f;
       topFactorsEl.appendChild(item);
-    }
+    });
+    if (whySection) whySection.hidden = false;
   }
 
   renderFindings(result);
+
+  if (result.domain && result.domain !== 'unknown') {
+    saveScanToHistory({ domain: result.domain, level: result.level, score: result.score, ts: Date.now() }, () => {
+      loadScanHistory(renderScanHistory);
+    });
+  }
+
+  // kick off live Safe Browsing check
+  if (url && chrome.runtime && chrome.runtime.sendMessage) {
+    $('reputationStatus').textContent = 'Checking Google Safe Browsing…';
+    chrome.runtime.sendMessage(
+      { type: 'CHECK_SAFE_BROWSING', url, tabId: currentTabId, localLevel: result.level },
+      (response) => {
+        if (chrome.runtime.lastError) return;
+        applyLiveThreatResult(response);
+      }
+    );
+  }
 
   // subtly reveal updated results
   const container = document.querySelector('.container');
   if (container) {
     container.classList.add('results-visible');
-    window.setTimeout(() => container.classList.remove('results-visible'), 1200);
+    setTimeout(() => container.classList.remove('results-visible'), 1200);
   }
 }
 
@@ -233,7 +307,7 @@ function renderFindings(result) {
     });
   } else {
     const item = document.createElement('li');
-    item.textContent = 'CatPhish didn’t spot any common phishing indicators on this page.';
+    item.textContent = "CatPhish didn't spot any common phishing indicators on this page.";
     concernsList.appendChild(item);
   }
 }
@@ -342,6 +416,7 @@ function initPopup() {
     initializeControls();
     loadCurrentPage((url) => {
       renderPageHeader(url);
+      loadScanHistory(renderScanHistory);
       if (currentSettings.autoScan && currentSettings.analysisEnabled) {
         renderResult(url);
       } else {

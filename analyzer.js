@@ -56,7 +56,7 @@ function getDomainReputation(domain) {
   return {
     status: trusted ? 'trusted' : 'unknown',
     score: trusted ? 80 : null,
-    source: trusted ? 'placeholder' : 'none',
+    source: trusted ? 'local' : 'none',
     confidence: trusted ? 0.5 : 0
   };
 }
@@ -261,29 +261,26 @@ function analyzeUrl(rawUrl) {
     trustExplanation = 'CatPhish could not identify this website category. Review the domain carefully before entering personal information.';
   }
 
+  // compute before fallback messages are appended so chips reflect real signals
+  const topFactors = scoreNotes.length ? scoreNotes.slice(0, 4) : positiveSignals.slice(0, 4);
+
   if (positiveSignals.length === 0) {
     positiveSignals.push('CatPhish did not detect any common positive signals yet.');
   }
 
   if (concerns.length === 0) {
-    concerns.push('CatPhish didn’t spot any common phishing indicators on this page.');
+    concerns.push("CatPhish didn't spot any common phishing indicators on this page.");
   }
 
   const scoreReason = scoreNotes.length
     ? `${scoreNotes.join('; ')}`
     : 'No major indicators.';
 
-  // top factors affecting the score (2-4 items)
-  const topFactors = scoreNotes.length ? scoreNotes.slice(0, 4) : concerns.slice(0, 4);
-
   return {
     url: rawUrl,
     domain,
     category,
     reputation,
-    reputationStatus: reputation.status,
-    reputationSource: reputation.source,
-    reputationConfidence: reputation.confidence,
     score,
     level,
     positiveSignals,
