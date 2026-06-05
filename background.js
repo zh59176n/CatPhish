@@ -1,6 +1,7 @@
 // background.js — service worker for Google Safe Browsing API calls and badge updates.
 
-const SAFE_BROWSING_API_KEY = 'AIzaSyA_2ukTl17_lqPWs16TNXq0R6FifSsVuwg'; // gitleaks:allow
+importScripts('config.js');
+importScripts('analyzer.js');
 const SAFE_BROWSING_ENDPOINT = 'https://safebrowsing.googleapis.com/v4/threatMatches:find';
 const THREAT_TYPES = ['MALWARE', 'SOCIAL_ENGINEERING', 'UNWANTED_SOFTWARE', 'POTENTIALLY_HARMFUL_APPLICATION'];
 const DEFAULT_CACHE_TTL = 5 * 60 * 1000;
@@ -64,6 +65,32 @@ function updateBadge(tabId, isThreat, localLevel) {
     chrome.action.setBadgeText({ text: '', tabId });
   }
 }
+
+const INTERNAL_PREFIXES = ['chrome://', 'chrome-extension://', 'about:', 'edge://', 'moz-extension://'];
+
+function scanTab(tabId, url) {
+  if (!url || INTERNAL_PREFIXES.some((p) => url.startsWith(p))) {
+    chrome.action.setBadgeText({ text: '', tabId });
+    return;
+  }
+  const local = analyzeUrl(url);
+  updateBadge(tabId, false, local.level);
+  checkSafeBrowsing(url, SAFE_BROWSING_API_KEY).then((sb) => {
+    updateBadge(tabId, sb.isThreat || false, local.level);
+  });
+}
+
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status !== 'complete' || !tab.url) return;
+  scanTab(tabId, tab.url);
+});
+
+chrome.tabs.onActivated.addListener(({ tabId }) => {
+  chrome.tabs.get(tabId, (tab) => {
+    if (chrome.runtime.lastError || !tab.url) return;
+    scanTab(tabId, tab.url);
+  });
+});
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.type !== 'CHECK_SAFE_BROWSING') return;

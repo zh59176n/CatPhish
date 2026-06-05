@@ -78,7 +78,6 @@ function getCoreDomain(hostname) {
 }
 
 function analyzeUrl(rawUrl) {
-  const reasons = [];
   let score = 0;
   let domain = 'unknown';
 
@@ -87,10 +86,9 @@ function analyzeUrl(rawUrl) {
       url: '',
       domain,
       category: 'Unknown',
-      reputation: { status: 'unknown', score: null, source: 'placeholder' },
+      reputation: { status: 'unknown', score: null, source: 'none' },
       score: 0,
       level: 'Low',
-      reasons: ['No URL available'],
       summary: 'No page was detected.',
       tip: 'Open a website and click CatPhish to scan the page.',
       trustExplanation: 'No site is currently loaded yet.'
@@ -105,10 +103,9 @@ function analyzeUrl(rawUrl) {
       url: rawUrl,
       domain,
       category: 'Unknown',
-      reputation: { status: 'unknown', score: null, source: 'placeholder' },
+      reputation: { status: 'unknown', score: null, source: 'none' },
       score: 60,
       level: 'High',
-      reasons: ['Malformed URL'],
       summary: 'The page URL could not be parsed.',
       tip: 'Be careful with links that look broken or strange.',
       trustExplanation: 'The URL format could not be interpreted, so this result is an initial warning.'
@@ -144,7 +141,6 @@ function analyzeUrl(rawUrl) {
   }
 
   const foundKeywords = SUSPICIOUS_WORDS.filter((word) => pathAndQuery.includes(word));
-  const loginKeywords = foundKeywords.filter((word) => LOGIN_KEYWORDS.includes(word));
 
   if (foundKeywords.length) {
     foundKeywords.forEach((word) => {

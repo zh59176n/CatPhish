@@ -1,5 +1,4 @@
 :root{
-  --bg: #ffe5f0;
   --card: #ffe2ec;
   --text: #342651;
   --muted: #6f5375;
@@ -8,7 +7,6 @@
   --accent: #e76f9e;
   --good: #2dce89;
   --warn: #ffd166;
-  --danger: #ff8fb6;
 }
 
 /* Swatch colours — double-class for specificity (0,2,0) beats .swatch (0,1,0) */
@@ -227,7 +225,7 @@ body.dark-mode      .cat-sprite{background-image:url('assets/icons/Black Cat.png
   border:1px solid rgba(255,255,255,0.95);
   border-radius:28px;
   box-shadow:0 16px 34px rgba(83,53,119,0.08);
-  padding:18px 18px 18px;
+  padding:18px;
   margin-top:14px;
   opacity:0;
   transform:translateY(10px);
@@ -284,7 +282,7 @@ body.dark-mode .site-domain{
 }
 body.dark-mode .risk-badge.risk-low{background:#3cce7c;color:#fff}
 body.dark-mode .risk-badge.risk-medium{background:#ffca5c;color:#111}
-body.dark-mode .risk-badge.risk-high{background:#ff82ab;color:#111}
+body.dark-mode .risk-badge.risk-high{background:#fc5c5c;color:#fff}
 body.dark-mode .scan-button{
   background:var(--accent);
 }
@@ -341,7 +339,7 @@ body.dark-mode .scan-button.disabled{
 }
 .risk-low{background:var(--good);color:#fff}
 .risk-medium{background:var(--warn);color:#111}
-.risk-high{background:var(--danger);color:#111}
+.risk-high{background:#e53e3e;color:#fff}
 .score-value{font-size:14px;font-weight:800;color:var(--accent);opacity:0.9}
 .risk-meter{
   margin-bottom:14px;
@@ -384,9 +382,6 @@ body.dark-mode .scan-button.disabled{
 }
 .findings-list li.negative{
   background:rgba(255,195,160,0.18);
-}
-.findings-list li::before{
-  content:'';
 }
 .small-factors li{padding:6px 10px;border-radius:999px;background:rgba(255,195,160,0.12);font-size:12px}
 
@@ -472,4 +467,3 @@ body.dark-mode .history-empty{color:#a89dc4}
   .container{width:300px}
   .settings-menu{right:12px;top:12px;width:210px}
 }
-
