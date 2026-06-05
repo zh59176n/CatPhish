@@ -66,6 +66,8 @@ function updateBadge(tabId, isThreat, localLevel) {
   }
 }
 
+const contentSignals = new Map(); // tabId → signals[]
+
 const INTERNAL_PREFIXES = ['chrome://', 'chrome-extension://', 'about:', 'edge://', 'moz-extension://'];
 
 function scanTab(tabId, url) {
@@ -92,12 +94,37 @@ chrome.tabs.onActivated.addListener(({ tabId }) => {
   });
 });
 
-chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-  if (message.type !== 'CHECK_SAFE_BROWSING') return;
-  const { url, tabId, localLevel } = message;
-  checkSafeBrowsing(url, SAFE_BROWSING_API_KEY).then((result) => {
-    if (tabId != null) updateBadge(tabId, result.isThreat, localLevel);
-    sendResponse(result);
-  });
-  return true; // keep message channel open for async response
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === 'CONTENT_SIGNALS') {
+    const tabId = sender.tab?.id;
+    if (tabId != null) {
+      contentSignals.set(tabId, message.signals);
+      const hasHighSignal = message.signals.some((s) => s.severity === 'high');
+      if (hasHighSignal) {
+        chrome.tabs.get(tabId, (tab) => {
+          if (chrome.runtime.lastError || !tab.url) return;
+          const local = analyzeUrl(tab.url);
+          updateBadge(tabId, false, 'High');
+          checkSafeBrowsing(tab.url, SAFE_BROWSING_API_KEY).then((sb) => {
+            updateBadge(tabId, sb.isThreat || false, 'High');
+          });
+        });
+      }
+    }
+    return;
+  }
+
+  if (message.type === 'GET_CONTENT_SIGNALS') {
+    sendResponse(contentSignals.get(message.tabId) || []);
+    return true;
+  }
+
+  if (message.type === 'CHECK_SAFE_BROWSING') {
+    const { url, tabId, localLevel } = message;
+    checkSafeBrowsing(url, SAFE_BROWSING_API_KEY).then((result) => {
+      if (tabId != null) updateBadge(tabId, result.isThreat, localLevel);
+      sendResponse(result);
+    });
+    return true;
+  }
 });

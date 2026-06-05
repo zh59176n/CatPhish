@@ -213,6 +213,25 @@ function applyLiveThreatResult(sbResult) {
   }
 }
 
+function applyContentSignals(signals) {
+  const high = signals.filter((s) => s.severity === 'high');
+  if (!high.length) return;
+  const concernsList = $('concernsList');
+  high.forEach((signal) => {
+    if (!concernsList) return;
+    const item = document.createElement('li');
+    item.className = 'negative';
+    item.textContent = signal.label;
+    concernsList.prepend(item);
+  });
+  if ($('risk')?.textContent !== 'High') {
+    $('risk').textContent = 'High';
+    $('risk').className = 'risk-badge risk-high';
+    const meterFill = $('riskMeterFill');
+    if (meterFill) meterFill.setAttribute('data-pct', '80');
+  }
+}
+
 function renderResult(url) {
   const result = analyzeUrl(url);
   currentPageUrl = result.url || '';
@@ -255,6 +274,14 @@ function renderResult(url) {
   if (result.domain && result.domain !== 'unknown') {
     saveScanToHistory({ domain: result.domain, level: result.level, score: result.score, ts: Date.now() }, () => {
       loadScanHistory(renderScanHistory);
+    });
+  }
+
+  // request content script signals already collected by background
+  if (currentTabId != null && chrome.runtime && chrome.runtime.sendMessage) {
+    chrome.runtime.sendMessage({ type: 'GET_CONTENT_SIGNALS', tabId: currentTabId }, (signals) => {
+      if (chrome.runtime.lastError || !signals) return;
+      applyContentSignals(signals);
     });
   }
 
