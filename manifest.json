@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "CatPhish",
-  "version": "0.1",
+  "version": "1.0",
   "description": "Kawaii phishing indicator and URL safety extension",
   "action": {
     "default_popup": "popup.html",
@@ -28,7 +28,7 @@
     }
   ],
   "permissions": ["activeTab", "storage", "tabs"],
-  "host_permissions": ["https://safebrowsing.googleapis.com/"],
+  "host_permissions": ["https://safebrowsing.googleapis.com/", "https://api.whoapi.com/"],
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com;"
   }

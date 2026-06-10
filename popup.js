@@ -213,6 +213,42 @@ function applyLiveThreatResult(sbResult) {
   }
 }
 
+function applyDomainAge(age) {
+  if (!age || !age.checked) return;
+  const { ageInDays } = age;
+  const positiveList = $('positiveList');
+  const concernsList = $('concernsList');
+
+  if (ageInDays < 30) {
+    if (concernsList) {
+      const item = document.createElement('li');
+      item.className = 'negative';
+      item.textContent = `Domain registered ${ageInDays} day${ageInDays !== 1 ? 's' : ''} ago — very new`;
+      concernsList.prepend(item);
+    }
+    if ($('risk')?.textContent !== 'High') {
+      $('risk').textContent = 'High';
+      $('risk').className = 'risk-badge risk-high';
+      const meterFill = $('riskMeterFill');
+      if (meterFill) meterFill.setAttribute('data-pct', '80');
+    }
+  } else if (ageInDays < 180) {
+    if (concernsList) {
+      const item = document.createElement('li');
+      item.className = 'negative';
+      item.textContent = `Domain is ${Math.floor(ageInDays / 30)} month${Math.floor(ageInDays / 30) !== 1 ? 's' : ''} old — recently created`;
+      concernsList.appendChild(item);
+    }
+  } else {
+    const years = (ageInDays / 365).toFixed(1);
+    if (positiveList) {
+      const item = document.createElement('li');
+      item.textContent = `Established domain (${years} years old)`;
+      positiveList.appendChild(item);
+    }
+  }
+}
+
 function applyContentSignals(signals) {
   const high = signals.filter((s) => s.severity === 'high');
   if (!high.length) return;
@@ -277,11 +313,15 @@ function renderResult(url) {
     });
   }
 
-  // request content script signals already collected by background
+  // request content script signals and domain age already collected by background
   if (currentTabId != null && chrome.runtime && chrome.runtime.sendMessage) {
     chrome.runtime.sendMessage({ type: 'GET_CONTENT_SIGNALS', tabId: currentTabId }, (signals) => {
       if (chrome.runtime.lastError || !signals) return;
       applyContentSignals(signals);
+    });
+    chrome.runtime.sendMessage({ type: 'GET_DOMAIN_AGE', tabId: currentTabId, domain: result.domain }, (age) => {
+      if (chrome.runtime.lastError || !age) return;
+      applyDomainAge(age);
     });
   }
 
